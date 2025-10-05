@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Flood Alert and Weather Monitoring System</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(to bottom right, #cce7ff, #e0f7fa);
+      font-family: 'Poppins', sans-serif;
+    }
+    .card {
+      background: white;
+      border-radius: 1rem;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      padding: 1.5rem;
+      transition: transform 0.2s;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+    }
+  </style>
+</head>
+<body class="p-6">
+
+  <header class="text-center mb-8">
+    <h1 class="text-3xl font-extrabold text-blue-800">🌊 Flood Alert & Weather Monitoring</h1>
+    <p class="text-gray-700">Developed by Riya – Bulacan</p>
+  </header>
+
+  <main class="grid gap-6 max-w-3xl mx-auto">
+
+    <!-- Weather Section -->
+    <div class="card">
+      <h2 class="text-2xl font-bold text-blue-700 mb-3">🌤️ Current Weather</h2>
+      <p id="weatherInfo" class="text-gray-800">Loading current weather...</p>
+    </div>
+
+    <!-- Flood Alert Controls -->
+    <div class="card text-center">
+      <h2 class="text-2xl font-bold text-blue-700 mb-4">🚨 Flood Alert Control</h2>
+      <div class="space-y-3">
+        <button id="testAlarmBtn" class="bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700 transition">🔔 Test Alarm</button>
+        <button id="emergencyBtn" class="bg-red-600 text-white px-4 py-2 rounded-lg shadow hover:bg-red-700 transition">⚠️ Send Emergency Alert</button>
+        <button id="evacuationBtn" class="bg-green-600 text-white px-4 py-2 rounded-lg shadow hover:bg-green-700 transition">📍 View Evacuation Routes</button>
+      </div>
+    </div>
+
+    <!-- Feedback Form -->
+    <div class="card">
+      <h2 class="text-2xl font-bold text-blue-700 mb-3">💬 Safety Feedback</h2>
+      <form id="feedbackForm" class="space-y-3">
+        <input type="text" placeholder="Your Name" class="w-full border rounded-lg p-2" required>
+        <input type="number" placeholder="Phone Number" class="w-full border rounded-lg p-2" required>
+        <input type="email" placeholder="Email Address" class="w-full border rounded-lg p-2">
+        <input type="text" placeholder="Social Media Account (optional)" class="w-full border rounded-lg p-2">
+        <input type="text" placeholder="Your Location / Barangay" class="w-full border rounded-lg p-2" required>
+        <textarea placeholder="Write your message or status here..." rows="4" class="w-full border rounded-lg p-2" required></textarea>
+        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700 transition w-full">📩 Send Feedback</button>
+      </form>
+      <p id="feedbackStatus" class="text-center text-green-700 mt-2"></p>
+    </div>
+
+  </main>
+
+  <footer class="text-center text-gray-600 text-sm mt-8">
+    © 2025 Flood Monitoring System | Developed for Research Purposes
+  </footer>
+
+  <script>
+    const apiKey = "c90764f19f804900f3a59f5be22be2ef";
+    const locationName = "Bulacan,PH";
+    const weatherInfo = document.getElementById("weatherInfo");
+
+    async function fetchWeather() {
+      const url = `https://api.openweathermap.org/data/2.5/weather?q=${locationName}&appid=${apiKey}&units=metric`;
+      try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error("Network error");
+        const data = await response.json();
+
+        const output = `
+          <strong>${data.name}</strong><br>
+          🌦️ ${data.weather[0].description.toUpperCase()}<br>
+          🌡️ Temp: ${data.main.temp}°C<br>
+          💧 Humidity: ${data.main.humidity}%<br>
+          🌬️ Wind: ${data.wind.speed} m/s
+        `;
+
+        weatherInfo.innerHTML = output;
+
+        // Save last data for offline mode
+        localStorage.setItem("lastWeather", JSON.stringify({
+          output,
+          time: new Date().toLocaleTimeString()
+        }));
+
+      } catch (error) {
+        const lastData = JSON.parse(localStorage.getItem("lastWeather"));
+        if (lastData) {
+          weatherInfo.innerHTML = `⚠️ You’re offline. Showing last update from ${lastData.time}:<br><br>${lastData.output}`;
+        } else {
+          weatherInfo.innerHTML = "⚠️ No weather data available (offline & no saved data).";
+        }
+      }
+    }
+
+    fetchWeather();
+    setInterval(fetchWeather, 600000); // updates every 10 mins
+
+    // Buttons
+    document.getElementById("testAlarmBtn").addEventListener("click", () => alert("🔔 Test Alarm Activated!"));
+    document.getElementById("emergencyBtn").addEventListener("click", () => alert("⚠️ Emergency Alert Sent to All Users!"));
+    document.getElementById("evacuationBtn").addEventListener("click", () => alert("📍 Redirecting to Evacuation Routes..."));
+
+    // Feedback form
+    document.getElementById("feedbackForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      localStorage.setItem("feedbackData", new Date().toLocaleString());
+      document.getElementById("feedbackStatus").innerText = "✅ Message sent successfully (stored locally for now).";
+      e.target.reset();
+    });
+  </script>
+
+</body>
+</html>
